@@ -2,10 +2,10 @@
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games:/home/pi/.dotnet
 BEGINTIME=$(date)
 #Remove previous files
-rm /home/pi/workspace/logo*jpg
-rm /home/pi/workspace/resized*
-rm /home/pi/workspace/text*
-rm /home/pi/workspace/GOES*jpg
+rm -f /home/pi/workspace/logo*jpg
+rm -f /home/pi/workspace/resized*
+rm -f /home/pi/workspace/text*
+rm -f /home/pi/workspace/GOES*jpg
 #rm /home/pi/workspace/GOEStemp.gif
 
 echo "Process starting at " $BEGINTIME 
@@ -70,7 +70,7 @@ while [[ "$LOOPCOUNT" -le "$MAXFOLDERS" ]]; do
 	fi
 done
 
----------------------------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------------------
 # If this is M1 or M2 FC channel delete the files for overnight. Don't need to do it for the enhanced channels
 cd /home/pi/workspace
 #find | grep FD_FC | grep T0 | xargs rm -f
@@ -80,7 +80,7 @@ find | grep M1_CH02_ | grep T0 | xargs rm -f
 find | grep M2_CH02_ | grep T0 | xargs rm -f
 
 # Remove files that cause flare
-rm GOES*0530*
+rm -f GOES*0530*
 #---------------------------------------------------------------------------------------------------------------
 #Use Sanchez to clean coloring on FD_FC files
 echo 'Filepath is '$FILEPATH
@@ -89,8 +89,8 @@ echo 'Filepath is '$FILEPATH
 	echo "Starting enhanced processing for FD_FC"
 	cd /home/pi/workspace
 	#Clear work folders
-	rm /home/pi/workspace/fd_enhance/*
-	rm /home/pi/workspace/fd_enhance_out/*
+	rm -f /home/pi/workspace/fd_enhance/*
+	rm -f /home/pi/workspace/fd_enhance_out/*
 	#Copy source files to the work folder for Sanchez
 	echo "Copying files to enhanced folder for preprocessing"
 	cp /home/pi/workspace/GOES*jpg /home/pi/workspace/fd_enhance/
@@ -110,7 +110,7 @@ else
 fi
 	
 #Remove the unprocessed files from workspace
-rm /home/pi/workspace/GOES*jpg
+rm -f /home/pi/workspace/GOES*jpg
 #copy the processed files into the workspace for subsequent processing
 echo "Copying processed files back into workspace"
 cp /home/pi/workspace/fd_enhance_out/*  /home/pi/workspace
@@ -156,7 +156,7 @@ if [[ $TAGFILES = 'true' ]]; then
 				convert logo_$FILENAME  -font helvetica -fill white -pointsize 50  -gravity center  -annotate +0+800 $FILENAME text_$FILENAME
 			fi
 
-			if [[ ${FILENAME:0:14} = 'GOES19_m_ch02' ]]; then
+			if [[ ${FILENAME:0:13} = 'GOES19_m_ch02' ]]; then
 				echo 'Adding text to ' $FILENAME
 				composite -watermark 40% -gravity northeast /home/pi/skunkworks15neg.jpg $FILENAME logo_$FILENAME
 				convert logo_$FILENAME  -font helvetica -fill white -pointsize 30  -gravity center  -annotate +0+200 $FILENAME text_$FILENAME
@@ -166,28 +166,19 @@ if [[ $TAGFILES = 'true' ]]; then
 				echo 'Adding text to ' $FILENAME
 				composite -watermark 40% -gravity northeast /home/pi/skunkworks2.jpg $FILENAME logo_$FILENAME
 				convert logo_$FILENAME  -font helvetica -fill white -pointsize 8  -gravity center  -annotate +0+200 $FILENAME text_$FILENAME
-			fi
-
-			if [[ ${FILENAME:0:14} = 'GOES19_m1_ch08' ]]; then
+			elif [[ ${FILENAME:0:14} = 'GOES19_m1_ch08' ]]; then
 				echo "Converting " $FILENAME
 				composite -watermark 40% -gravity northeast /home/pi/skunkworks15neg.jpg $FILENAME logo_$FILENAME
 				convert logo_$FILENAME  -font helvetica -fill white -pointsize 8  -gravity center  -annotate +0+200 $FILENAME text_$FILENAME
-			fi
-
-			if [[ ${FILENAME:0:14} = 'GOES19_m1_ch09' ]]; then
+			elif [[ ${FILENAME:0:14} = 'GOES19_m1_ch09' ]]; then
 				echo "Converting " $FILENAME
 				composite -watermark 40% -gravity northeast /home/pi/skunkworks1.jpg $FILENAME logo_$FILENAME
 				convert logo_$FILENAME  -font helvetica -fill white -pointsize 8  -gravity center  -annotate +0+200 $FILENAME text_$FILENAME
-			fi
-
-
-			if [[ ${FILENAME:0:14} = 'GOES19_m1_ch13' ]]; then #Revise
+			elif [[ ${FILENAME:0:14} = 'GOES19_m1_ch13' ]]; then #Revise
 				echo "Converting " $FILENAME
 				composite -watermark 40% -gravity northeast /home/pi/skunkworks2.jpg $FILENAME logo_$FILENAME
 				convert logo_$FILENAME  -font helvetica -fill white -pointsize 8  -gravity center  -annotate +0+200 $FILENAME text_$FILENAME
-			fi
-
-			if [[ ${FILENAME:0:12} = 'GOES19_m1_ch' ]]; then #Revise
+			elif [[ ${FILENAME:0:12} = 'GOES19_m1_ch' ]]; then #catch-all for other m1 channels
 				echo "Converting " $FILENAME
 				composite -watermark 40% -gravity northeast /home/pi/skunkworks10neg.jpg $FILENAME logo_$FILENAME
 				convert logo_$FILENAME  -font helvetica -fill white -pointsize 50  -gravity center  -annotate +0+400 $FILENAME text_$FILENAME
@@ -254,7 +245,7 @@ convert -loop 0 -delay $FRAMERATE "resized*.jpg" "GOEStemp.gif"
 
 echo "Starting FFmpeg " $(date)
 cp GOEStemp.gif $OUTPUTPATH.gif
-rm  $OUTPUTPATH"_"$FRAMERATE.mp4
+rm -f $OUTPUTPATH"_"$FRAMERATE.mp4
 
 if [[ $US_ONLY != 'true' ]]; then
 	ffmpeg -y -i GOEStemp.gif -filter "minterpolate='mi_mode=blend'" -c:v libx264 -pix_fmt yuv420p "/home/pi/workspace/"$OUTPUTPATH"_"$FRAMERATE.mp4
